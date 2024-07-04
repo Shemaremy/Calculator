@@ -1,0 +1,83 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+
+
+
+body {
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  margin: 0 auto
+}
+
+#root {
+  height: 100%;
+  width: 100%
+}
+
+.App {
+  background-color: rgb(143, 108, 84);
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.calculator-grid {
+  display: grid;
+  margin-top: 2rem;
+  justify-content: center;
+  grid-template-columns: repeat(4, 7rem);
+  grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
+  border-radius: 10px;
+  overflow: hidden;
+
+  @media (max-width: 425px){
+    grid-template-columns: repeat(4, 6rem);
+  }
+}
+
+.calculator-grid > button {
+  cursor: pointer;
+  font-size: 20px;
+  border: 1px solid rgba(49, 27, 27, 0.479);
+  outline: none;
+  background-color: rgba(255, 255, 255, .75);
+}
+
+
+.calculator-grid > button:hover,
+.calculator-grid > button:focus {
+  background-color: rgba(255, 255, 255, .9);
+}
+
+.span-two {
+  grid-column: span 2;
+}
+
+.output {
+  grid-column: 1 / -1;
+  background-color: rgba(0, 0, 0, .75);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-around;
+  padding: .75rem;
+  word-wrap: break-word;
+  word-break: break-all;
+  border-radius: 10px 10px 0px 0px;
+}
+
+.output .previous-operand {
+  color: rgba(255, 255, 255, .75);
+  font-size: 1.5rem;
+}
+
+.output .current-operand {
+  color: white;
+  font-size: 2.5rem;
+}
