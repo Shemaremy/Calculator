@@ -24,7 +24,7 @@ function reducer(state, { type, payload }) {
       if (state.overwrite) {
         return {
           ...state,
-          currentOperand: payload.digit,
+          currentOperand: payload.digit === '.' ? `0${payload.digit}` : payload.digit,
           overwrite: false,
           formula: payload.digit === '.' ? `0${payload.digit}` : payload.digit,
         };
@@ -73,18 +73,7 @@ function reducer(state, { type, payload }) {
         };
       }
 
-
-
-      if (state.currentOperand == null && state.previousOperand == null) {
-        if (payload.operation === '-') {
-          return {
-            ...state,
-            currentOperand: payload.operation,
-            formula: state.formula + payload.operation,
-          };
-        }
-        return state;
-      }
+      if (state.currentOperand == null && state.previousOperand == null) {return state;}
 
       if (state.currentOperand == null) {
         if (payload.operation === '-') {
@@ -121,7 +110,7 @@ function reducer(state, { type, payload }) {
         previousOperand: evaluate(state),
         operation: payload.operation,
         currentOperand: null,
-        formula: `${state.previousOperand}${state.operation}${state.currentOperand}${payload.operation}`,
+        formula:  `${state.formula}${payload.operation}`
       };
 
     case ACTIONS.CLEAR:
@@ -130,7 +119,7 @@ function reducer(state, { type, payload }) {
         previousOperand: null,
         operation: null,
         overwrite: false,
-        formula: '',
+        formula: '0',
       };
     
     case ACTIONS.DELETE_DIGIT:
@@ -142,22 +131,20 @@ function reducer(state, { type, payload }) {
           formula: 0,
         };
       }
-      if (state.currentOperand == null) return state;
 
-
-      if (state.currentOperand === 0) return state;
-
-      if (state.currentOperand === '0' || state.currentOperand === null) {
+      if (state.currentOperand == null || state.currentOperand === '0') {
         return state;
       }
+
+
 
       const updatedCurrentOperand = state.currentOperand.slice(0, -1);
       const updatedFormula = state.formula.slice(0, -1);
 
       return {
         ...state,
-        currentOperand: updatedCurrentOperand || '0',
-        formula: updatedFormula || '0',
+        currentOperand: updatedCurrentOperand,
+        formula: updatedFormula,
       };
 
     case ACTIONS.EVALUATE:
@@ -221,7 +208,7 @@ function evaluate({ currentOperand, previousOperand, operation }) {
       return '';
   }
 
-  return computation.toFixed(4);
+  return computation;
 }
 
 
