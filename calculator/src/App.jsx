@@ -14,6 +14,7 @@ export const ACTIONS = {
 
 
 
+
 // Controls how the calculator's data changes when you press buttons.
 function reducer(state, { type, payload }) {
   const endsWithOperator = /[+\-*/]$/;
@@ -106,7 +107,7 @@ function reducer(state, { type, payload }) {
           formula: state.formula.slice(0, -1),
         };
       }
-      if (state.currentOperand == null) return state;
+      if (state.currentOperand == null) return 0;
       if (state.currentOperand.length === 1) {
         return { ...state, currentOperand: null, formula: state.formula.slice(0, -1) };
       }
@@ -202,7 +203,7 @@ function App() {
       <div className="calculator-grid">
         <div className="output" id="display">
           <div className="previous-operand">{formula}</div>
-          <div className="current-operand">{operation} {formatOperand(currentOperand)}</div>
+          <div className="current-operand">{operation} {currentOperand}</div>
         </div>
         <button id="clear" className="span-two" onClick={() => dispatch({ type: ACTIONS.CLEAR })}>
           AC
