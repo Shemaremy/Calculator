@@ -1,19 +1,16 @@
-import React from 'react'
-import { useReducer } from "react"
-import DigitButton from "./DigitButton"
-import OperationButton from "./OperationButton"
-import './App.css'
-
-
+import React from 'react';
+import { useReducer } from 'react';
+import DigitButton from './DigitButton';
+import OperationButton from './OperationButton';
+import './App.css';
 
 export const ACTIONS = {
-  ADD_DIGIT: "add-digit",
-  CHOOSE_OPERATION: "choose-operation",
-  CLEAR: "clear",
-  DELETE_DIGIT: "delete-digit",
-  EVALUATE: "evaluate",
-}
-
+  ADD_DIGIT: 'add-digit',
+  CHOOSE_OPERATION: 'choose-operation',
+  CLEAR: 'clear',
+  DELETE_DIGIT: 'delete-digit',
+  EVALUATE: 'evaluate',
+};
 
 
 
@@ -26,30 +23,39 @@ function reducer(state, { type, payload }) {
           ...state,
           currentOperand: payload.digit,
           overwrite: false,
-        }
+          formula: state.formula + payload.digit,
+        };
       }
-      if (payload.digit === "0" && state.currentOperand === "0") {
-        return state
+      if (payload.digit === '0' && state.currentOperand === '0') {
+        return state;
       }
-      if (payload.digit === "." && state.currentOperand.includes(".")) {
-        return state
+      if (payload.digit === '.' && state.currentOperand.includes('.')) {
+        return state;
       }
 
       return {
         ...state,
-        currentOperand: `${state.currentOperand || ""}${payload.digit}`,
-      }
+        currentOperand: `${state.currentOperand || ''}${payload.digit}`,
+        formula: state.formula + payload.digit,
+      };
     case ACTIONS.CHOOSE_OPERATION:
-      
       if (state.currentOperand == null && state.previousOperand == null) {
-        return state
+        if (payload.operation === '-') {
+          return {
+            ...state,
+            currentOperand: payload.operation,
+            formula: state.formula + payload.operation,
+          };
+        }
+        return state;
       }
 
       if (state.currentOperand == null) {
         return {
           ...state,
           operation: payload.operation,
-        }
+          formula: state.formula.slice(0, -1) + payload.operation,
+        };
       }
 
       if (state.previousOperand == null) {
@@ -58,7 +64,8 @@ function reducer(state, { type, payload }) {
           operation: payload.operation,
           previousOperand: state.currentOperand,
           currentOperand: null,
-        }
+          formula: state.formula + payload.operation,
+        };
       }
 
       return {
@@ -66,33 +73,39 @@ function reducer(state, { type, payload }) {
         previousOperand: evaluate(state),
         operation: payload.operation,
         currentOperand: null,
-      }
+        formula: state.formula + payload.operation,
+      };
     case ACTIONS.CLEAR:
-      return {currentOperand: '0'}
+      return {
+        currentOperand: '0',
+        formula: '',
+      };
     case ACTIONS.DELETE_DIGIT:
       if (state.overwrite) {
         return {
           ...state,
           overwrite: false,
           currentOperand: null,
-        }
+          formula: state.formula.slice(0, -1),
+        };
       }
-      if (state.currentOperand == null) return state
+      if (state.currentOperand == null) return state;
       if (state.currentOperand.length === 1) {
-        return { ...state, currentOperand: null }
+        return { ...state, currentOperand: null, formula: state.formula.slice(0, -1) };
       }
 
       return {
         ...state,
         currentOperand: state.currentOperand.slice(0, -1),
-      }
+        formula: state.formula.slice(0, -1),
+      };
     case ACTIONS.EVALUATE:
       if (
         state.operation == null ||
         state.currentOperand == null ||
         state.previousOperand == null
       ) {
-        return state
+        return state;
       }
 
       return {
@@ -101,77 +114,80 @@ function reducer(state, { type, payload }) {
         previousOperand: null,
         operation: null,
         currentOperand: evaluate(state),
-      }
+        formula: state.formula + '=' + evaluate(state),
+      };
+    default:
+      return state;
   }
 }
+
 
 
 
 // Does the math (like adding, subtracting) based on what you've entered
 function evaluate({ currentOperand, previousOperand, operation }) {
-  const prev = parseFloat(previousOperand)
-  const current = parseFloat(currentOperand)
-  if (isNaN(prev) || isNaN(current)) return ""
-  let computation = ""
+  const prev = parseFloat(previousOperand);
+  const current = parseFloat(currentOperand);
+  if (isNaN(prev) || isNaN(current)) return '';
+  let computation = '';
   switch (operation) {
-    case "+":
-      computation = prev + current
-      break
-    case "-":
-      computation = prev - current
-      break
-    case "*":
-      computation = prev * current
-      break
-    case "÷":
-      computation = prev / current
-      break
+    case '+':
+      computation = prev + current;
+      break;
+    case '-':
+      computation = prev - current;
+      break;
+    case '*':
+      computation = prev * current;
+      break;
+    case '÷':
+      computation = prev / current;
+      break;
+    default:
+      return '';
   }
 
-  return computation.toString()
+  return computation.toString();
 }
 
 
 
-const INTEGER_FORMATTER = new Intl.NumberFormat("en-us", {
+const INTEGER_FORMATTER = new Intl.NumberFormat('en-us', {
   maximumFractionDigits: 0,
-})
+});
+
 
 
 // Makes numbers look nice on the screen (no decimals if it's a whole number).
 function formatOperand(operand) {
-  if (operand == null) return
-  const [integer, decimal] = operand.split(".")
-  if (decimal == null) return INTEGER_FORMATTER.format(integer)
-  return `${INTEGER_FORMATTER.format(integer)}.${decimal}`
+  if (operand == null) return;
+  const [integer, decimal] = operand.split('.');
+  if (decimal == null) return INTEGER_FORMATTER.format(integer);
+  return `${INTEGER_FORMATTER.format(integer)}.${decimal}`;
 }
-
-
-
 
 
 
 
 function App() {
-
-  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(reducer, {
+  const [{ currentOperand, previousOperand, operation, formula }, dispatch] = useReducer(reducer, {
     currentOperand: '0', // Initialize currentOperand to '0' to display 0 as default
     previousOperand: null,
     operation: null,
     overwrite: true,
-  })
-
+    formula: '', // Initialize formula as an empty string
+  });
 
   return (
     <div className="App">
       <div className="calculator-grid">
         <div className="output" id="display">
-          <div className="previous-operand">
-            {formatOperand(previousOperand)} {operation}
-          </div>
-          <div className="current-operand">{formatOperand(currentOperand)}</div>
+          <div className="previous-operand">{formula}</div>
+          <div className="current-operand">{operation} {formatOperand(currentOperand)}</div>
         </div>
-        <button id="clear" className="span-two" onClick={() => dispatch({ type: ACTIONS.CLEAR })}> AC </button>
+        <button id="clear" className="span-two" onClick={() => dispatch({ type: ACTIONS.CLEAR })}>
+          AC
+        </button>
         <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>DEL</button>
         <OperationButton operation="÷" dispatch={dispatch} />
 
@@ -196,10 +212,12 @@ function App() {
         <DigitButton digit="." dispatch={dispatch} />
         <DigitButton digit="0" dispatch={dispatch} />
 
-        <button id="equals" className="span-two" onClick={() => dispatch({ type: ACTIONS.EVALUATE })}> = </button>
+        <button id="equals" className="span-two" onClick={() => dispatch({ type: ACTIONS.EVALUATE })}>
+          =
+        </button>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
