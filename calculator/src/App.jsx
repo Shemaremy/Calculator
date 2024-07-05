@@ -26,7 +26,7 @@ function reducer(state, { type, payload }) {
           ...state,
           currentOperand: payload.digit,
           overwrite: false,
-          formula: state.formula.includes('=') ? payload.digit : state.formula + payload.digit,
+          formula: payload.digit === '.' ? `0${payload.digit}` : payload.digit,
         };
       }
 
@@ -61,6 +61,20 @@ function reducer(state, { type, payload }) {
       };
     
     case ACTIONS.CHOOSE_OPERATION:
+
+      if (state.overwrite) {
+        return {
+          ...state,
+          previousOperand: state.currentOperand,
+          operation: payload.operation,
+          currentOperand: null,
+          overwrite: false,
+          formula: `${state.currentOperand}${payload.operation}`,
+        };
+      }
+
+
+
       if (state.currentOperand == null && state.previousOperand == null) {
         if (payload.operation === '-') {
           return {
@@ -107,7 +121,7 @@ function reducer(state, { type, payload }) {
         previousOperand: evaluate(state),
         operation: payload.operation,
         currentOperand: null,
-        formula: state.formula + payload.operation,
+        formula: `${state.previousOperand}${state.operation}${state.currentOperand}${payload.operation}`,
       };
 
     case ACTIONS.CLEAR:
@@ -124,11 +138,12 @@ function reducer(state, { type, payload }) {
         return {
           ...state,
           overwrite: false,
-          currentOperand: '0',
-          formula: '0',
+          currentOperand: 0,
+          formula: 0,
         };
       }
       if (state.currentOperand == null) return state;
+
 
       if (state.currentOperand === 0) return state;
 
@@ -146,41 +161,22 @@ function reducer(state, { type, payload }) {
       };
 
     case ACTIONS.EVALUATE:
-      if (state.currentOperand == null) {
+      if ( state.operation == null || state.currentOperand == null || state.previousOperand == null) {
         return state;
       }
-    
-      let result;
-      if (state.previousOperand == null) {
-        // If no previous operand, use current operand as result
-        result = state.currentOperand;
-      } else {
-        // Otherwise, perform the calculation
-        const expression = state.formula;
-        result = evaluateExpression(expression);
-      }
-    
-      // Prepare the new formula for display
-      let newFormula;
-      if (state.formula == state.currentOperand) {
-        // If there was no previous operation, display current operand = result
-        newFormula = `${state.currentOperand} = ${result}`;
-      } else {
-        // Otherwise, update the formula to show the original expression without appending = result
-        newFormula = state.formula;
-        //newFormula = state.formula + '=' + evaluate(state);
-        //newFormula = `${state.currentOperand} = ${result}`;
-      }
-    
+
+      // Calculate the result with the correct order of operations
+      const expression = state.formula;
+      const result = (evaluateExpression(expression)).toFixed(4).replace(/\.?0+$/, '');
+
       return {
         ...state,
         overwrite: true,
         previousOperand: null,
         operation: null,
         currentOperand: result,
-        formula: newFormula,
+        formula: state.formula + '=' + result,
       };
-      
 
 
     default:
@@ -193,9 +189,9 @@ function reducer(state, { type, payload }) {
 function evaluateExpression(expression) {
   expression = expression.replace(/÷/g, '/');
   try {
-    return new Function('return ' + expression)().toString();
+    return new Function('return ' + expression)();
   } catch (e) {
-    return 'Errr';
+    return 'Error';
   }
 }
 
@@ -207,7 +203,7 @@ function evaluate({ currentOperand, previousOperand, operation }) {
   const prev = parseFloat(previousOperand);
   const current = parseFloat(currentOperand);
   if (isNaN(prev) || isNaN(current)) return '';
-  let computation = '';
+  let computation = 0;
   switch (operation) {
     case '+':
       computation = prev + current;
@@ -225,7 +221,7 @@ function evaluate({ currentOperand, previousOperand, operation }) {
       return '';
   }
 
-  return computation.toString();
+  return computation.toFixed(4);
 }
 
 
