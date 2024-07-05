@@ -26,20 +26,38 @@ function reducer(state, { type, payload }) {
           ...state,
           currentOperand: payload.digit,
           overwrite: false,
+          formula: state.formula.includes('=') ? payload.digit : state.formula + payload.digit,
+        };
+      }
+
+      if (state.currentOperand === '0' && payload.digit !== '.') {
+        return {
+          ...state,
+          currentOperand: payload.digit,
+          formula: state.formula.slice(0, -state.currentOperand.length) + payload.digit,
+        };
+      }
+      
+      if (state.currentOperand === '0' && payload.digit === '.') {
+        return {
+          ...state,
+          currentOperand: '0' + payload.digit,
           formula: state.formula + payload.digit,
         };
       }
+
       if (payload.digit === '0' && state.currentOperand === '0') {
         return state;
       }
       if (payload.digit === '.' && state.currentOperand.includes('.')) {
         return state;
       }
+      
 
       return {
         ...state,
         currentOperand: `${state.currentOperand || ''}${payload.digit}`,
-        formula: state.formula + payload.digit,
+        formula: state.formula === '0' && payload.digit === '.' ? `0${payload.digit}` : state.formula + payload.digit,
       };
     
     case ACTIONS.CHOOSE_OPERATION:
@@ -95,6 +113,9 @@ function reducer(state, { type, payload }) {
     case ACTIONS.CLEAR:
       return {
         currentOperand: '0',
+        previousOperand: null,
+        operation: null,
+        overwrite: false,
         formula: '',
       };
     
@@ -103,41 +124,78 @@ function reducer(state, { type, payload }) {
         return {
           ...state,
           overwrite: false,
-          currentOperand: null,
-          formula: state.formula.slice(0, -1),
+          currentOperand: '0',
+          formula: '0',
         };
       }
-      if (state.currentOperand == null) return 0;
-      if (state.currentOperand.length === 1) {
-        return { ...state, currentOperand: null, formula: state.formula.slice(0, -1) };
-      }
+      if (state.currentOperand == null) return state;
 
-      return {
-        ...state,
-        currentOperand: state.currentOperand.slice(0, -1),
-        formula: state.formula.slice(0, -1),
-      };
+      if (state.currentOperand === 0) return state;
 
-    case ACTIONS.EVALUATE:
-      if (
-        state.operation == null ||
-        state.currentOperand == null ||
-        state.previousOperand == null
-      ) {
+      if (state.currentOperand === '0' || state.currentOperand === null) {
         return state;
       }
 
+      const updatedCurrentOperand = state.currentOperand.slice(0, -1);
+      const updatedFormula = state.formula.slice(0, -1);
+
+      return {
+        ...state,
+        currentOperand: updatedCurrentOperand || '0',
+        formula: updatedFormula || '0',
+      };
+
+    case ACTIONS.EVALUATE:
+      if (state.currentOperand == null) {
+        return state;
+      }
+    
+      let result;
+      if (state.previousOperand == null) {
+        // If no previous operand, use current operand as result
+        result = state.currentOperand;
+      } else {
+        // Otherwise, perform the calculation
+        const expression = state.formula;
+        result = evaluateExpression(expression);
+      }
+    
+      // Prepare the new formula for display
+      let newFormula;
+      if (state.formula == state.currentOperand) {
+        // If there was no previous operation, display current operand = result
+        newFormula = `${state.currentOperand} = ${result}`;
+      } else {
+        // Otherwise, update the formula to show the original expression without appending = result
+        newFormula = state.formula;
+        //newFormula = state.formula + '=' + evaluate(state);
+        //newFormula = `${state.currentOperand} = ${result}`;
+      }
+    
       return {
         ...state,
         overwrite: true,
         previousOperand: null,
         operation: null,
-        currentOperand: evaluate(state),
-        formula: state.formula + '=' + evaluate(state),
+        currentOperand: result,
+        formula: newFormula,
       };
-    
+      
+
+
     default:
       return state;
+  }
+
+}
+
+// Helps that multiplication and division comes before anything else
+function evaluateExpression(expression) {
+  expression = expression.replace(/÷/g, '/');
+  try {
+    return new Function('return ' + expression)().toString();
+  } catch (e) {
+    return 'Errr';
   }
 }
 
@@ -211,9 +269,9 @@ function App() {
         <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>DEL</button>
         <OperationButton operation="÷" dispatch={dispatch} />
 
-        <DigitButton digit="1" dispatch={dispatch} />
-        <DigitButton digit="2" dispatch={dispatch} />
-        <DigitButton digit="3" dispatch={dispatch} />
+        <DigitButton digit="7" dispatch={dispatch} />
+        <DigitButton digit="8" dispatch={dispatch} />
+        <DigitButton digit="9" dispatch={dispatch} />
 
         <OperationButton operation="*" dispatch={dispatch} />
 
@@ -223,9 +281,9 @@ function App() {
 
         <OperationButton operation="+" dispatch={dispatch} />
 
-        <DigitButton digit="7" dispatch={dispatch} />
-        <DigitButton digit="8" dispatch={dispatch} />
-        <DigitButton digit="9" dispatch={dispatch} />
+        <DigitButton digit="1" dispatch={dispatch} />
+        <DigitButton digit="2" dispatch={dispatch} />
+        <DigitButton digit="3" dispatch={dispatch} />
 
         <OperationButton operation="-" dispatch={dispatch} />
 
