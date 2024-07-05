@@ -16,6 +16,8 @@ export const ACTIONS = {
 
 // Controls how the calculator's data changes when you press buttons.
 function reducer(state, { type, payload }) {
+  const endsWithOperator = /[+\-*/]$/;
+
   switch (type) {
     case ACTIONS.ADD_DIGIT:
       if (state.overwrite) {
@@ -38,6 +40,7 @@ function reducer(state, { type, payload }) {
         currentOperand: `${state.currentOperand || ''}${payload.digit}`,
         formula: state.formula + payload.digit,
       };
+    
     case ACTIONS.CHOOSE_OPERATION:
       if (state.currentOperand == null && state.previousOperand == null) {
         if (payload.operation === '-') {
@@ -51,6 +54,14 @@ function reducer(state, { type, payload }) {
       }
 
       if (state.currentOperand == null) {
+        if (payload.operation === '-') {
+          return {
+            ...state,
+            currentOperand: payload.operation,
+            formula: state.formula + payload.operation,
+          };
+        }
+        
         return {
           ...state,
           operation: payload.operation,
@@ -59,6 +70,10 @@ function reducer(state, { type, payload }) {
       }
 
       if (state.previousOperand == null) {
+        if (state.currentOperand === '-' && endsWithOperator.test(state.formula.slice(0, -1))) {
+          return state;
+        }
+
         return {
           ...state,
           operation: payload.operation,
@@ -75,11 +90,13 @@ function reducer(state, { type, payload }) {
         currentOperand: null,
         formula: state.formula + payload.operation,
       };
+
     case ACTIONS.CLEAR:
       return {
         currentOperand: '0',
         formula: '',
       };
+    
     case ACTIONS.DELETE_DIGIT:
       if (state.overwrite) {
         return {
@@ -99,6 +116,7 @@ function reducer(state, { type, payload }) {
         currentOperand: state.currentOperand.slice(0, -1),
         formula: state.formula.slice(0, -1),
       };
+
     case ACTIONS.EVALUATE:
       if (
         state.operation == null ||
@@ -116,6 +134,7 @@ function reducer(state, { type, payload }) {
         currentOperand: evaluate(state),
         formula: state.formula + '=' + evaluate(state),
       };
+    
     default:
       return state;
   }
