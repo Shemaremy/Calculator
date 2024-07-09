@@ -35,10 +35,6 @@ body {
   grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
   border-radius: 10px;
   overflow: hidden;
-
-  @media (max-width: 425px){
-    grid-template-columns: repeat(4, 6rem);
-  }
 }
 
 .calculator-grid > button {
@@ -81,3 +77,184 @@ body {
   color: white;
   font-size: 2.5rem;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*--------------------------- RESPONSIVENESS -------------------------------------------*/
+/*--------------------------- RESPONSIVENESS -------------------------------------------*/
+/*--------------------------- RESPONSIVENESS -------------------------------------------*/
+
+@media (min-width: 0px) and (max-width: 280px){
+  .calculator-grid {
+    overflow-x: auto;
+    width: 100%;
+    grid-template-columns: repeat(4, 4rem);
+    grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
+  }
+
+  .output {
+    width: 100%;
+  }
+
+  .previous-operand, .current-operand {
+    width: 90%;
+    text-align: right;
+    margin: 0 auto;
+  }
+
+}
+
+
+
+@media (min-width: 281px) and (max-width: 350px){
+  .calculator-grid {
+    overflow: hidden;
+    width: 100%;
+    grid-template-columns: repeat(4, 5rem);
+    grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
+  }
+
+  .output {
+    width: 100%;
+  }
+
+  .previous-operand, .current-operand {
+    width: 90%;
+    text-align: right;
+    margin: 0 auto;
+  }
+
+}
+
+
+
+@media (min-width: 351px) and (max-width: 427px){
+  .calculator-grid {
+    overflow: hidden;
+    width: 100%;
+    grid-template-columns: repeat(4, 6rem);
+    grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
+  }
+
+  .output {
+    width: 100%;
+  }
+
+  .previous-operand, .current-operand {
+    width: 90%;
+    text-align: right;
+    margin: 0 auto;
+  }
+
+}
+
+
+
+@media (min-width: 428px) and (max-width: 465px){
+  .calculator-grid {
+    overflow: hidden;
+    width: 100%;
+    grid-template-columns: repeat(4, 7rem);
+    grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
+  }
+
+  .output {
+    width: 100%;
+  }
+
+  .previous-operand, .current-operand {
+    width: 90%;
+    text-align: right;
+    margin: 0 auto;
+  }
+
+}
+
+
+
+
+
+
+
+
